@@ -18,6 +18,7 @@ const sectionVariants = {
   },
 };
 
+// Animation for the horizontal line
 const hrVariants = {
   hidden: { width: "0%" },
   visible: {
@@ -26,6 +27,7 @@ const hrVariants = {
   },
 };
 
+// Animation for the cards
 const Certificates = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,27 +38,8 @@ const Certificates = () => {
   const [userDetails, setUserDetails] = useState<any>(null);
   const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
 
-  // const fetchCertificates = async () => {
-  //   try {
-  //     const response = await axios.get("/api/certificates");
-  //     console.log("Fetched Certificates:", response.data);
-      
-      
-  //   } catch (err) {
-  //     console.error("Failed to fetch certificates:", err);
-  //     setError("Failed to fetch data.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
-  // useEffect(() => {
-  //   fetchCertificates();
-  // }, []);
 
- 
-
-  
   // Fetch bytecode from contract
   const handleGetByteCode = async () => {
     if (!userId) {
@@ -64,6 +47,7 @@ const Certificates = () => {
       return;
     }
 
+    // Check if userId is a valid number
     try {
       const result = await readContract(wagmiAdapter.wagmiConfig, {
         address: contract_address,
@@ -71,8 +55,12 @@ const Certificates = () => {
         functionName: "getCertificatesByStudentId", // Replace with your actual function name
         args: [userId], // Assuming the function takes a user ID as an argument
       });
+      // console.log("bytecode", result)
       setByteCode(result as string); // Assuming the result is a string (bytecode)
+      // console.log("bytecode", byteCode)
+      // setByteCode(result); // Assuming the result is a string (bytecode)
       setIsByteCodeModalOpen(true);
+
     } catch (error) {
       console.error("Error fetching bytecode:", error);
       alert("Failed to fetch bytecode. Check console for details.");
@@ -92,6 +80,7 @@ const Certificates = () => {
       return;
     }
 
+    // Check if inputByteCode is a valid bytecode string
     try {
       const result = await readContract(wagmiAdapter.wagmiConfig, {
         address: contract_address, // Or another contract address if different
@@ -110,6 +99,25 @@ const Certificates = () => {
 
   // if (loading) return <p className="text-white text-center">Loading...</p>;
   // if (error) return <p className="text-red-400 text-center">{error}</p>;
+
+
+  // const fetchCertificates = async () => {
+  //   try {
+  //     const response = await axios.get("/api/certificates");
+  //     console.log("Fetched Certificates:", response.data);
+
+
+  //   } catch (err) {
+  //     console.error("Failed to fetch certificates:", err);
+  //     setError("Failed to fetch data.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchCertificates();
+  // }, []);
 
   return (
     <section
