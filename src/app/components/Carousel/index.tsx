@@ -19,9 +19,10 @@ const carouselItems = [
     image: image2,
     text: "Celebrate Your Success",
   },
-  
+
 ];
 
+// Carousel component
 const Carousel = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -51,6 +52,7 @@ const Carousel = () => {
     },
   };
 
+  // Letter animation variants
   const letterVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
