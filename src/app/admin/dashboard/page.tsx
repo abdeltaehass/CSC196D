@@ -5,12 +5,12 @@ import { toast } from "sonner"; // Import toast for notifications
 import { Button } from "@/components/ui/button"; // ShadCN Button
 import { Dialog, DialogContent } from "@/components/ui/dialog"; // ShadCN Modal
 import Image from "next/image";
-import {writeContract, readContract, simulateContract } from "@wagmi/core";
-import {contract_abi, contract_address} from '@/lib/contract'
+import { writeContract, readContract, simulateContract } from "@wagmi/core";
+import { contract_abi, contract_address } from '@/lib/contract'
 import { wagmiAdapter } from '@/lib/config';
 import Certificates from "@/app/components/Certificates";
 
-
+// AdminDashboard component
 const AdminDashboard = () => {
   // const [certificates, setCertificates] = useState<any[]>([]);
   const [contacts, setContacts] = useState<any[]>([]);
@@ -20,14 +20,14 @@ const AdminDashboard = () => {
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState<boolean>(false);
   const [isIssuerModalOpen, setIsIssuerModalOpen] = useState<boolean>(false);
   const [isRemoveIssuerModal, setIsRemoveIssuerModal] = useState<boolean>(false)
-    const [isByteCodeModalOpen, setIsByteCodeModalOpen] = useState<boolean>(false);
-   const [userId, setUserId] = useState<any>("");
-   const [byteid, setbyteid] = useState<any>("");
-    const [byteCode, setByteCode] = useState<any>("");
+  const [isByteCodeModalOpen, setIsByteCodeModalOpen] = useState<boolean>(false);
+  const [userId, setUserId] = useState<any>("");
+  const [byteid, setbyteid] = useState<any>("");
+  const [byteCode, setByteCode] = useState<any>("");
   const [certificateData, setCertificateData] = useState<any>({
     name: "",
-    id :"",
-    course:"",
+    id: "",
+    course: "",
   });
   const [selectedCertificate, setSelectedCertificate] = useState<any>(null);
   const [issuerAddress, setIssuerAddress] = useState<any>("")
@@ -39,19 +39,23 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       setLoading(true); // Ensure loading starts fresh
       try {
+        // Fetch certificates and contacts data
         console.log("Fetching data...");
         const [certificatesResponse, contactsResponse] = await Promise.all([
           axios.get("/api/certificates"),
           axios.get("/api/contact"),
         ]);
+        // Log the responses for debugging
         console.log("Certificates Response:", certificatesResponse.data);
         console.log("Contacts Response:", contactsResponse.data);
-        
+
         setContacts(contactsResponse.data || []);
       } catch (err: any) {
         console.error("Fetch error:", err.message);
+        // Set error state if any error occurs
         setError("Failed to fetch data. Check console for details.");
       } finally {
+        // Set loading to false after fetching data
         setLoading(false);
       }
     };
@@ -60,33 +64,35 @@ const AdminDashboard = () => {
 
 
 
-  
+  // Function to handle file input change (if needed in the future)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target; // Get the name and value from the input
     setCertificateData({ ...certificateData, [name]: value }); // Update the specific field
   };
 
+  // Function to handle file input change (if needed in the future)
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     // Check if any field is empty
     if (!certificateData.name || !certificateData.id || !certificateData.course) {
       toast.error("Please fill all fields.");
       return;
     }
-  
+
     // Create FormData object
     const formData = new FormData();
+    // Append data to FormData
     formData.append("name", certificateData.name);
     formData.append("id", certificateData.id);
     formData.append("course", certificateData.course);
-  
+
     // Log FormData contents explicitly
     console.log("FormData contents:");
     for (const [key, value] of formData.entries()) {
       console.log(`${key}: ${value}`);
     }
-  
+
     try {
       // Uncomment this when ready to test API
       // await axios.post("/api/certificates", formData, {
@@ -94,20 +100,21 @@ const AdminDashboard = () => {
       // });
       // const certificatesResponse = await axios.get("/api/certificates");
       // setCertificates(certificatesResponse.data || []);
+      // console.log("Certificates:", certificatesResponse.data);
       const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
         address: contract_address,
         abi: contract_abi,
         functionName: "issueCertificate",
         args: [certificateData.name, certificateData.id, certificateData.course],
       });
-      
-      if(gas){
+
+      if (gas) {
         const res = await writeContract(wagmiAdapter.wagmiConfig, {
           address: contract_address,
           abi: contract_abi,
           functionName: "issueCertificate",
           args: [certificateData.name, certificateData.id, certificateData.course],
-       
+
         });
         console.log("res", res);
 
@@ -121,50 +128,61 @@ const AdminDashboard = () => {
     }
   };
 
+
+  // Function to handle input change for file upload (if needed in the future)
   const handleCopyByteCode = () => {
     navigator.clipboard.writeText(byteCode);
     alert("Bytecode copied to clipboard!");
   };
 
+
+
+  // Function to handle input change for file upload (if needed in the future)
   const handleGetByteCode = async () => {
-      if (!userId) {
-        alert("Please enter a User ID");
-        return;
-      }
-  
-      try {
-        const result = await readContract(wagmiAdapter.wagmiConfig, {
-          address: contract_address,
-          abi: contract_abi,
-          functionName: "getCertificatesByStudentId", // Replace with your actual function name
-          args: [userId], // Assuming the function takes a user ID as an argument
-        });
-        setByteCode(result as string); // Assuming the result is a string (bytecode)
-        setIsByteCodeModalOpen(true);
-        setIsRemoveModalOpen(false);
-      } catch (error) {
-        console.error("Error fetching bytecode:", error);
-        alert("Failed to fetch bytecode. Check console for details.");
-      }
-    };
- 
-    const RemoveCertificate = async () => {
-      if (!byteid) {
-        alert("Please enter a Byte Code");
-        return;
-      }
-  
-      try {
+    if (!userId) {
+      alert("Please enter a User ID");
+      return;
+    }
 
-        const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
-          address: contract_address,
-          abi: contract_abi,
-          functionName: "revokeCertificate", // Replace with your actual function name
-          args: [byteid],
-        });
-        
 
-       if(gas){
+
+    // Check if the address is valid (optional)
+    try {
+      const result = await readContract(wagmiAdapter.wagmiConfig, {
+        address: contract_address,
+        abi: contract_abi,
+        functionName: "getCertificatesByStudentId", // Replace with your actual function name
+        args: [userId], // Assuming the function takes a user ID as an argument
+      });
+      setByteCode(result as string); // Assuming the result is a string (bytecode)
+      setIsByteCodeModalOpen(true);
+      setIsRemoveModalOpen(false);
+    } catch (error) {
+      console.error("Error fetching bytecode:", error);
+      alert("Failed to fetch bytecode. Check console for details.");
+    }
+  };
+
+
+
+  // Function to handle certificate view
+  const RemoveCertificate = async () => {
+    if (!byteid) {
+      alert("Please enter a Byte Code");
+      return;
+    }
+
+    try {
+
+      const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
+        address: contract_address,
+        abi: contract_abi,
+        functionName: "revokeCertificate", // Replace with your actual function name
+        args: [byteid],
+      });
+
+
+      if (gas) {
         const result = await writeContract(wagmiAdapter.wagmiConfig, {
           address: contract_address,
           abi: contract_abi,
@@ -172,130 +190,135 @@ const AdminDashboard = () => {
           args: [byteid], // Assuming the function takes a user ID as an argument
         });
         console.log("resulte", result)
-        
+
         setResultState("Certificate Revoked Successfully")
         setTimeout(() => {
-          setIsRemoveModalOpen(false); 
+          setIsRemoveModalOpen(false);
           setIsByteCodeModalOpen(false);
-          setResulteModal(true); 
+          setResulteModal(true);
         }, 4000);
-       }
-
-      } catch (error) {
-        console.error("Error fetching bytecode:", error);
-        alert("Failed to fetch bytecode. Check console for details.");
       }
-    };
-    const AddIssuer = async () => {
-      if (!issuerAddress) {
-        alert("Please enter a Address");
-        return;
-      }
-  
-      try {
 
-        const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
-          address: contract_address,
-          abi: contract_abi,
-          functionName: "addIssuer", // Replace with your actual function name
-          args: [issuerAddress],
-        });
+    } catch (error) {
+      console.error("Error fetching bytecode:", error);
+      alert("Failed to fetch bytecode. Check console for details.");
+    }
+  };
+  const AddIssuer = async () => {
+    if (!issuerAddress) {
+      alert("Please enter a Address");
+      return;
+    }
 
-       if(gas){
+    try {
+
+      const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
+        address: contract_address,
+        abi: contract_abi,
+        functionName: "addIssuer", // Replace with your actual function name
+        args: [issuerAddress],
+      });
+
+      if (gas) {
         const result = await writeContract(wagmiAdapter.wagmiConfig, {
           address: contract_address,
           abi: contract_abi,
           functionName: "addIssuer", // Replace with your actual function name
           args: [issuerAddress], // Assuming the function takes a user ID as an argument
         });
-        
+
         console.log("resulte", result)
         setResultState("Issuer Added Successfully")
         setTimeout(() => {
           setIsIssuerModalOpen(false); // Close the current modal (assumed User Details)
           setResulteModal(true); // Open the new success modal
         }, 4000);
-       }
-      } catch (error) {
-        console.error("Error fetching bytecode:", error);
-        alert("Maybe you are not allow to Add Issuer");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching bytecode:", error);
+      alert("Maybe you are not allow to Add Issuer");
+    }
+  };
 
-    const RemoveIssuer = async () => {
-      if (!issuerAddress) {
-        alert("Please enter a Address");
-        return;
-      }
-  
-      try {
+  const RemoveIssuer = async () => {
+    if (!issuerAddress) {
+      alert("Please enter a Address");
+      return;
+    }
 
-        const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
-          address: contract_address,
-          abi: contract_abi,
-          functionName: "removeIssuer", // Replace with your actual function name
-          args: [issuerAddress],
-        });
+    try {
 
-       if(gas){
+      const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
+        address: contract_address,
+        abi: contract_abi,
+        functionName: "removeIssuer", // Replace with your actual function name
+        args: [issuerAddress],
+      });
+
+      if (gas) {
         const result = await writeContract(wagmiAdapter.wagmiConfig, {
           address: contract_address,
           abi: contract_abi,
           functionName: "removeIssuer", // Replace with your actual function name
           args: [issuerAddress], // Assuming the function takes a user ID as an argument
         });
-        
+
         console.log("resulte", result)
         setResultState("Certificate Revoked Successfully")
         setTimeout(() => {
           setIsRemoveIssuerModal(false); // Close the current modal (assumed User Details)
           setResulteModal(true); // Open the new success modal
         }, 4000);
-       }
-      } catch (error) {
-        console.error("Error Occur While Removing Issuer:", error);
-        alert("Maybe you are not allow to remove Issuer");
       }
-    };
+    } catch (error) {
+      console.error("Error Occur While Removing Issuer:", error);
+      alert("Maybe you are not allow to remove Issuer");
+    }
+  };
 
-    const AddAdmin = async () => {
-      if (!issuerAddress) {
-        alert("Please enter a Address");
-        return;
-      }
-  
-      try {
+  // Function to handle certificate view
+  const AddAdmin = async () => {
+    if (!issuerAddress) {
+      alert("Please enter a Address");
+      return;
+    }
+    // Check if the address is valid (optional)
+    try {
+      // 
+      const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
+        address: contract_address,
+        abi: contract_abi,
+        functionName: "addAdmin", // Replace with your actual function name
+        args: [issuerAddress],
+      });
 
-        const gas = await simulateContract(wagmiAdapter.wagmiConfig, {
-          address: contract_address,
-          abi: contract_abi,
-          functionName: "addAdmin", // Replace with your actual function name
-          args: [issuerAddress],
-        });
-
-       if(gas){
+      if (gas) {
         const result = await writeContract(wagmiAdapter.wagmiConfig, {
           address: contract_address,
           abi: contract_abi,
           functionName: "addAdmin", // Replace with your actual function name
           args: [issuerAddress], // Assuming the function takes a user ID as an argument
         });
-        
+
         console.log("resulte", result)
         setResultState("Admin Added Successfully")
         setTimeout(() => {
           setAddAdminModal(false); // Close the current modal (assumed User Details)
           setResulteModal(true); // Open the new success modal
         }, 4000);
-       }
-      } catch (error) {
-        console.error("Error Occur While Adding Admin:", error);
-        alert("Maybe you are not allow to Add Admin");
       }
-    };
- 
- 
+    } catch (error) {
+      console.error("Error Occur While Adding Admin:", error);
+      alert("Maybe you are not allow to Add Admin");
+    }
+  };
 
+
+
+
+
+
+  // Function to handle certificate view
   return (
     <div className="min-h-screen bg-gradient-to-r from-cyan-500 to-blue-500 p-6 mt-12 relative">
       <h1 className="text-4xl font-bold text-white mb-6 text-center">Admin Dashboard</h1>
@@ -360,7 +383,7 @@ const AdminDashboard = () => {
               />
             </div> */}
             <div className="flex justify-end gap-4">
-              <Button  onClick={() => setIsModalOpen(false)}>
+              <Button onClick={() => setIsModalOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit">Submit</Button>
@@ -415,54 +438,54 @@ const AdminDashboard = () => {
             >
               Get Byte Code
             </button>
-          
+
           </div>
-      
+
         </DialogContent>
       </Dialog>
 
       {isByteCodeModalOpen && (
-          <div className="fixed inset-0 bg-white/10 backdrop-blur-md flex items-center justify-center z-50">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 w-full max-w-md">
-              <h3 className="text-2xl font-bold text-white audio_font mb-4 text-center">
-                Byte Code
-              </h3>
-              <p className="text-black text-center mb-4 break-all">{byteCode}</p>
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={handleCopyByteCode}
-                  className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors audio_font"
-                >
-                  Copy
-                </button>
-                <button
-                  onClick={() => setIsByteCodeModalOpen(false)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors audio_font"
-                >
-                  Close
-                </button>
-              </div>
-              <div className="mb-4 max-w-md mx-auto mt-5">
-            <input
-              type="text"
-              value={byteid}
-              onChange={(e) => setbyteid(e.target.value)}
-              placeholder="Enter Byte Code"
-              className="w-full px-4 py-3 bg-white/20 text-white placeholder-white/50 rounded-lg border border-white/30 focus:outline-none focus:border-cyan-400 audio_font mb-4"
-            />
-            <button
-              onClick={RemoveCertificate}
-              className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors audio_font"
-            >
-              Remove Certificate
-            </button>
-          
-          </div>
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-md flex items-center justify-center z-50">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 w-full max-w-md">
+            <h3 className="text-2xl font-bold text-white audio_font mb-4 text-center">
+              Byte Code
+            </h3>
+            <p className="text-black text-center mb-4 break-all">{byteCode}</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleCopyByteCode}
+                className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors audio_font"
+              >
+                Copy
+              </button>
+              <button
+                onClick={() => setIsByteCodeModalOpen(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors audio_font"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mb-4 max-w-md mx-auto mt-5">
+              <input
+                type="text"
+                value={byteid}
+                onChange={(e) => setbyteid(e.target.value)}
+                placeholder="Enter Byte Code"
+                className="w-full px-4 py-3 bg-white/20 text-white placeholder-white/50 rounded-lg border border-white/30 focus:outline-none focus:border-cyan-400 audio_font mb-4"
+              />
+              <button
+                onClick={RemoveCertificate}
+                className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors audio_font"
+              >
+                Remove Certificate
+              </button>
+
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        
+
       <Dialog open={isIssuerModalOpen} onOpenChange={setIsIssuerModalOpen}>
         <DialogContent className="bg-white/10 backdrop-blur-md border border-white/20 text-white max-w-2xl">
           <h3 className="text-2xl font-bold mb-4 text-center">Add Issuer</h3>
@@ -478,11 +501,11 @@ const AdminDashboard = () => {
               onClick={AddIssuer}
               className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors audio_font"
             >
-             Add Issuer
+              Add Issuer
             </button>
-          
+
           </div>
-      
+
         </DialogContent>
       </Dialog>
 
@@ -501,16 +524,16 @@ const AdminDashboard = () => {
               onClick={RemoveIssuer}
               className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors audio_font"
             >
-             Remove Issuer
+              Remove Issuer
             </button>
-          
+
           </div>
-      
+
         </DialogContent>
       </Dialog>
 
       {/* add admin modal */}
-      
+
       <Dialog open={addAdminModalm} onOpenChange={setAddAdminModal}>
         <DialogContent className="bg-white/10 backdrop-blur-md border border-white/20 text-white max-w-2xl">
           <h3 className="text-2xl font-bold mb-4 text-center">Add Admin</h3>
@@ -526,28 +549,28 @@ const AdminDashboard = () => {
               onClick={AddAdmin}
               className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors audio_font"
             >
-             Add Admin
+              Add Admin
             </button>
-          
+
           </div>
-      
+
         </DialogContent>
       </Dialog>
 
       <Dialog open={resultModal} onOpenChange={setResulteModal}>
         <DialogContent className="bg-white/10 backdrop-blur-md border border-white/20 text-white max-w-2xl">
-        
+
           <div className="mb-8 max-w-md mx-auto">
-           <p className="text-gray text-lg text-center">{resulteState}</p>
+            <p className="text-gray text-lg text-center">{resulteState}</p>
             <button
               onClick={() => setResulteModal(false)}
               className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors audio_font"
             >
-             Close
+              Close
             </button>
-          
+
           </div>
-      
+
         </DialogContent>
       </Dialog>
 
@@ -585,7 +608,7 @@ const AdminDashboard = () => {
           !loading && !error && <p className="text-white text-center">No certificates uploaded yet.</p>
         )}
       </div> */}
-      <Certificates/>
+      <Certificates />
 
       {/* Contacts Section */}
       <div className="mt-10">
