@@ -1,4 +1,4 @@
-﻿# 🎓 Decentralized Certificate Issuance and Verification System
+# 🎓 Decentralized Certificate Issuance and Verification System
 
 ## 📚 Project Overview
 This project transforms a traditional centralized certificate issuance and verification system into a decentralized application (DApp) using the Ethereum blockchain. The goal is to allow educational institutions and certification bodies to issue certificates in a tamper-proof, transparent, and efficient way, while enabling public verification without relying on a single central authority.
@@ -21,30 +21,40 @@ This project transforms a traditional centralized certificate issuance and verif
 ## 📬 Project Repository
 - GitHub Link: [CSC196D Final Project Repository](https://github.com/abdeltaehass/CSC196D.git)
 
-## 📸 Screenshots
-(Screenshots of Admin and User Pages can be inserted here.)
 
----
+
+## 📸 Screenshots
+### 1. Dashboard
+![Dashboard](/screenshots/Picture1.png)
+
+### 2. Wallet Connection
+![Wallet Connection](/screenshots/Picture2.png)
+
+### 3. Certificate Form
+![Certificate Form](/screenshots/Picture3.png)
+
+### 4. Contact Us Page
+![Contact Us Page](/screenshots/Picture4.png)
+
+
 
 ## ⚙️ How to Set Up and Run the Project
-
-### Project Steup 
+### 1. Clone the Repository
 ```bash
-1. Clone the Repository
-    git clone https://github.com/abdeltaehass/CSC196D.git
+git clone https://github.com/abdeltaehass/CSC196D.git
 
-2. Install Dependencies
+Install Dependencies
     cd CSC196D
     npm install
 
-3. Start Local Blockchain (Ganache CLI)
+Start Local Blockchain (Ganache CLI)
     ganache-cli
 
-4. Compile and Deploy Smart Contracts
+Complie and Deploy Smart Contracts
     truffle compile
     truffle migrate
 
-5. Run the Frontend
+Run the Frontend
     npm run dev
 
 
